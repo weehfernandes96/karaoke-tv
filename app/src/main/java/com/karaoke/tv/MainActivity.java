@@ -1,6 +1,8 @@
 package com.karaoke.tv;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -49,10 +51,32 @@ public class MainActivity extends Activity {
         } catch (Exception e) { return "about:blank"; }
     }
 
+    // botão Voltar do controle: pergunta se quer fechar o app
     @Override public boolean onKeyDown(int k, KeyEvent e) {
-        if (k == KeyEvent.KEYCODE_BACK && web.canGoBack()) { web.goBack(); return true; }
+        if (k == KeyEvent.KEYCODE_BACK) { askExit(); return true; }
         return super.onKeyDown(k, e);
     }
-    @Override protected void onResume() { super.onResume(); web.onResume(); }
-    @Override protected void onPause() { super.onPause(); }   // mantém a música tocando
+
+    private void askExit() {
+        new AlertDialog.Builder(this)
+            .setTitle("Fechar o Karaokê?")
+            .setMessage("A música vai parar.")
+            .setPositiveButton("Sim, fechar", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface d, int w) { closeAll(); }
+            })
+            .setNegativeButton("Não", null)
+            .show();
+    }
+
+    private void closeAll() {
+        try { web.loadUrl("about:blank"); web.destroy(); } catch (Exception e) { /* ok */ }
+        finishAndRemoveTask();
+        android.os.Process.killProcess(android.os.Process.myPid());
+    }
+
+    // saiu do app pelo botão Home: para a música e encerra por completo
+    @Override protected void onStop() {
+        super.onStop();
+        if (!isChangingConfigurations()) closeAll();
+    }
 }
