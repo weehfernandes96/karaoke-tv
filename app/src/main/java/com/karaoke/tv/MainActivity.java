@@ -53,7 +53,12 @@ public class MainActivity extends Activity {
 
     // botão Voltar do controle: pergunta se quer fechar o app
     @Override public boolean onKeyDown(int k, KeyEvent e) {
-        if (k == KeyEvent.KEYCODE_BACK) { askExit(); return true; }
+        if (k == KeyEvent.KEYCODE_BACK) {
+            web.evaluateJavascript("window.karaokeBack?window.karaokeBack():false", new android.webkit.ValueCallback<String>() {
+                public void onReceiveValue(String v) { if (!"true".equals(v)) askExit(); }
+            });
+            return true;
+        }
         return super.onKeyDown(k, e);
     }
 
